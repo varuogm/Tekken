@@ -16,9 +16,29 @@ const body = Barlow_Condensed({
   variable: "--font-body",
 });
 
+const PREVIEW_IMAGE =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfoAufKLxR0qUEHbAVkhpyg6PnGtl6eFv6ii_TwKWcYaCS1J6LPSUpQ5KY&s=10";
+
 export const metadata: Metadata = {
-  title: "Tekken Battle League",
+  title: "Tekken Leaderboard",
   description: "Private Tekken league leaderboard and match tracker",
+  openGraph: {
+    title: "Tekken Leaderboard",
+    description: "Private Tekken league leaderboard and match tracker",
+    type: "website",
+    images: [
+      {
+        url: PREVIEW_IMAGE,
+        alt: "Tekken League",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tekken League",
+    description: "Private Tekken league leaderboard and match tracker",
+    images: [PREVIEW_IMAGE],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
