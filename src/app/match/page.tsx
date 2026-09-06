@@ -128,16 +128,22 @@ export default function MatchPage() {
               <button
                 type="button"
                 onClick={() => chooseResult(true)}
-                className="display min-h-[92px] rounded-2xl bg-[var(--win)] text-3xl text-black active:scale-[0.98]"
+                className="display flex min-h-[92px] flex-col items-center justify-center rounded-2xl bg-[var(--win)] px-2 text-3xl leading-none text-black active:scale-[0.98]"
               >
                 WIN
+                <span className="mt-2 font-sans text-xs font-semibold uppercase tracking-wider opacity-80">
+                  {leftPlayer}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => chooseResult(false)}
-                className="display min-h-[92px] rounded-2xl bg-[var(--lose)] text-3xl text-white active:scale-[0.98]"
+                className="display flex min-h-[92px] flex-col items-center justify-center rounded-2xl bg-[var(--win)] px-2 text-3xl leading-none text-black active:scale-[0.98]"
               >
-                LOSE
+                WIN
+                <span className="mt-2 font-sans text-xs font-semibold uppercase tracking-wider opacity-80">
+                  {rightPlayer}
+                </span>
               </button>
             </div>
           </div>

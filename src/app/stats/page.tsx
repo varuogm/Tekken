@@ -360,6 +360,17 @@ export default function StatsPage() {
           onClose={() => setSelectedMatch(null)}
         />
       ) : null}
+
+      <footer className="pt-4 pb-2 text-center">
+        <a
+          href="https://github.com/varuogm/Tekken"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-[var(--muted)] underline-offset-2 hover:text-[var(--gold)] hover:underline"
+        >
+          github.com/varuogm/Tekken
+        </a>
+      </footer>
     </main>
   );
 }
