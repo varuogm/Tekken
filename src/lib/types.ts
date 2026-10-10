@@ -13,6 +13,7 @@ export type Match = {
   winner_id: string;
   loser_id: string;
   comment: string | null;
+  played_at?: string;
   created_at: string;
 };
 
@@ -31,6 +32,24 @@ export type CreateMatchPayload = {
   winner: string;
   loser: string;
   comment?: string;
+  playedAt?: string;
+};
+
+export type PeriodLeaderboardEntry = {
+  playerId: string;
+  name: string;
+  wins: number;
+  losses: number;
+  matches: number;
+  winRate: number;
+  rank: number;
+};
+
+export type DayLeaderboardGroup = {
+  dateKey: string;
+  label: string;
+  matchCount: number;
+  leaderboard: PeriodLeaderboardEntry[];
 };
 
 export type PlayerStats = {
@@ -90,6 +109,11 @@ export type LeagueStats = {
   totalMatches: number;
   totalPlayers: number;
   leaderboard: LeaderboardEntry[];
+  todayMatchCount: number;
+  todayLeaderboard: PeriodLeaderboardEntry[];
+  weekMatchCount: number;
+  weekLeaderboard: PeriodLeaderboardEntry[];
+  weekByDay: DayLeaderboardGroup[];
   headToHead: HeadToHead[];
   characterUsage: CharacterUsageStat[];
   fun: FunStats;

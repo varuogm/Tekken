@@ -71,7 +71,6 @@ export function CharacterSwipe({ value, onChange, side, priority }: Props) {
               priority={priority}
               className={side === "left" ? "scale-x-[-1]" : ""}
             />
-            <div className="absolute inset-x-0 bottom-0 h-1/4 bg-[var(--bg)]/80" />
           </motion.div>
         </AnimatePresence>
       </div>

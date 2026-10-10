@@ -4,10 +4,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AdminGate } from "@/components/AdminGate";
+import { CharacterSearch } from "@/components/CharacterSearch";
 import { CharacterSwipe } from "@/components/CharacterSwipe";
 import { PlayerPicker } from "@/components/PlayerPicker";
 import { apiFetch } from "@/lib/api-client";
 import { getCharacterName, PLAYERS } from "@/lib/constants";
+import { todayLocalDate } from "@/lib/dates";
 
 type Phase = "pick" | "confirm";
 
@@ -23,6 +25,7 @@ export default function MatchPage() {
   const [phase, setPhase] = useState<Phase>("pick");
   const [leftWon, setLeftWon] = useState<boolean | null>(null);
   const [comment, setComment] = useState("");
+  const [battleDate, setBattleDate] = useState(todayLocalDate);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,6 +60,7 @@ export default function MatchPage() {
           winner: winner.toLowerCase(),
           loser: loser.toLowerCase(),
           comment: comment.trim() || undefined,
+          playedAt: battleDate,
         }),
       });
 
@@ -87,19 +91,33 @@ export default function MatchPage() {
       <AdminGate>
         {phase === "pick" ? (
           <div className="mt-3">
-            <div className="grid h-[40vh] min-h-[240px] grid-cols-2 border-y border-[var(--line)]">
-              <CharacterSwipe
-                side="left"
-                value={leftChar}
-                onChange={setLeftChar}
-                priority
-              />
-              <CharacterSwipe
-                side="right"
-                value={rightChar}
-                onChange={setRightChar}
-                priority
-              />
+            <div className="border-y border-[var(--line)]">
+              <div className="grid h-[36vh] min-h-[220px] grid-cols-2">
+                <CharacterSwipe
+                  side="left"
+                  value={leftChar}
+                  onChange={setLeftChar}
+                  priority
+                />
+                <CharacterSwipe
+                  side="right"
+                  value={rightChar}
+                  onChange={setRightChar}
+                  priority
+                />
+              </div>
+              <div className="grid grid-cols-2 border-t border-[var(--line)] bg-[var(--bg-panel)]">
+                <CharacterSearch
+                  side="left"
+                  value={leftChar}
+                  onChange={setLeftChar}
+                />
+                <CharacterSearch
+                  side="right"
+                  value={rightChar}
+                  onChange={setRightChar}
+                />
+              </div>
             </div>
 
             <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3">
@@ -163,12 +181,23 @@ export default function MatchPage() {
                 </p>
               </div>
 
+              <label className="mt-5 block text-left text-xs uppercase tracking-wider text-[var(--muted)]">
+                Battle date
+                <input
+                  type="date"
+                  value={battleDate}
+                  max={todayLocalDate()}
+                  onChange={(e) => setBattleDate(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-3 text-sm outline-none focus:border-[var(--gold)]"
+                />
+              </label>
+
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Optional comment"
                 rows={2}
-                className="mt-5 w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-3 text-left text-sm outline-none focus:border-[var(--gold)]"
+                className="mt-4 w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3 py-3 text-left text-sm outline-none focus:border-[var(--gold)]"
               />
 
               {error ? (

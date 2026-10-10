@@ -18,6 +18,7 @@ create table if not exists matches (
   winner_id uuid not null references players(id),
   loser_id uuid not null references players(id),
   comment text,
+  played_at date not null default (current_date),
   created_at timestamptz not null default now(),
   constraint different_players check (player1_id <> player2_id),
   constraint winner_is_participant check (winner_id = player1_id or winner_id = player2_id),
@@ -26,6 +27,9 @@ create table if not exists matches (
 );
 
 create index if not exists matches_created_at_idx on matches (created_at desc);
+create index if not exists matches_played_at_idx on matches (played_at desc);
+
+-- Existing DB? Run: supabase/migrations/add_played_at.sql
 create index if not exists matches_winner_id_idx on matches (winner_id);
 create index if not exists matches_loser_id_idx on matches (loser_id);
 create index if not exists matches_player1_id_idx on matches (player1_id);

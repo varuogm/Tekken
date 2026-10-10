@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       winner,
       loser,
       comment,
+      playedAt,
     } = body;
 
     if (
@@ -81,19 +82,30 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Invalid winner/loser" }, { status: 400 });
     }
 
+    let played_at: string | undefined;
+    if (playedAt != null && playedAt !== "") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(playedAt)) {
+        return Response.json({ error: "Invalid battle date" }, { status: 400 });
+      }
+      played_at = playedAt;
+    }
+
     const supabase = getSupabaseAdmin();
+    const insertRow: Record<string, unknown> = {
+      player1_id: p1.id,
+      player2_id: p2.id,
+      player1_character: player1Character,
+      player2_character: player2Character,
+      winner_id: win.id,
+      loser_id: lose.id,
+      comment: comment?.trim() || null,
+    };
+    if (played_at) insertRow.played_at = played_at;
+
     const { data, error } = await supabase
       .from("matches")
-      .insert({
-        player1_id: p1.id,
-        player2_id: p2.id,
-        player1_character: player1Character,
-        player2_character: player2Character,
-        winner_id: win.id,
-        loser_id: lose.id,
-        comment: comment?.trim() || null,
-      })
-      .select("id, created_at")
+      .insert(insertRow)
+      .select("id, played_at, created_at")
       .single();
 
     if (error) throw error;
