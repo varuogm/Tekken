@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { useLeagueStats } from "@/hooks/useLeagueStats";
 import { getCharacterName } from "@/lib/constants";
-import { formatBattleDate } from "@/lib/dates";
+import { formatBattleOrdinal, formatDayHeading, parsePlayedAt } from "@/lib/dates";
 import type { MatchWithPlayers } from "@/lib/types";
 
 function FormDots({ form }: { form: ("W" | "L")[] }) {
@@ -59,6 +59,41 @@ export default function StatsPage() {
     const name = selectedPlayer || data.leaderboard[0].name;
     return data.leaderboard.find((p) => p.name === name) ?? data.leaderboard[0];
   }, [data, selectedPlayer]);
+
+  const recentBattlesByDay = useMemo(() => {
+    if (!data?.recentMatches.length) return [];
+
+    type DayGroup = {
+      dateKey: string;
+      label: string;
+      items: { match: MatchWithPlayers; battleNum: number }[];
+    };
+
+    const groups: DayGroup[] = [];
+    let currentKey = "";
+
+    for (let idx = 0; idx < data.recentMatches.length; idx++) {
+      const match = data.recentMatches[idx];
+      const dateKey = parsePlayedAt(match);
+      const battleNum = data.totalMatches - idx;
+
+      if (dateKey !== currentKey) {
+        groups.push({
+          dateKey,
+          label: formatDayHeading(dateKey),
+          items: [],
+        });
+        currentKey = dateKey;
+      }
+      groups[groups.length - 1].items.push({ match, battleNum });
+    }
+
+    for (const group of groups) {
+      group.items.sort((a, b) => a.battleNum - b.battleNum);
+    }
+
+    return groups;
+  }, [data]);
 
   const nemesis = useMemo(() => {
     if (!data || !player) return null;
@@ -327,28 +362,41 @@ export default function StatsPage() {
         {data.recentMatches.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">No battles recorded.</p>
         ) : (
-          <div className="space-y-2">
-            {data.recentMatches.map((match, idx) => (
-              <button
-                key={match.id}
-                type="button"
-                onClick={() => setSelectedMatch(match)}
-                className="panel flex w-full flex-col rounded-2xl p-4 text-left transition active:scale-[0.99]"
-              >
-                <p className="font-semibold">
-                  ⚔️ {match.winner.name} defeated {match.loser.name}
-                </p>
-                <p className="mt-1 text-sm capitalize text-[var(--muted)]">
-                  {getCharacterName(match.player1_character)} vs{" "}
-                  {getCharacterName(match.player2_character)}
-                </p>
-                <p className="mt-1 text-xs text-white/50">
-                  {formatBattleDate(match)}
-                </p>
-                <p className="mt-0.5 text-xs text-white/35">
-                  Battle #{data.totalMatches - idx}
-                </p>
-              </button>
+          <div className="space-y-5">
+            {recentBattlesByDay.map((day, dayIdx) => (
+              <div key={day.dateKey} className="space-y-2">
+                {dayIdx > 0 ? (
+                  <div className="my-1 h-px bg-[var(--line)]" aria-hidden />
+                ) : null}
+                <div className="flex items-baseline justify-between gap-2 border-l-2 border-[var(--gold)] pl-3">
+                  <h3 className="display text-base text-white">{day.label}</h3>
+                  <span className="text-xs text-[var(--muted)]">
+                    {day.items.length}{" "}
+                    {day.items.length === 1 ? "match" : "matches"}
+                  </span>
+                </div>
+                {day.items.map(({ match, battleNum }) => (
+                  <button
+                    key={match.id}
+                    type="button"
+                    onClick={() => setSelectedMatch(match)}
+                    className="panel flex w-full flex-col rounded-2xl p-4 text-left transition active:scale-[0.99]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold">
+                        ⚔️ {match.winner.name} defeated {match.loser.name}
+                      </p>
+                      <span className="shrink-0 text-xs text-[var(--gold)]">
+                        {formatBattleOrdinal(battleNum)}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm capitalize text-[var(--muted)]">
+                      {getCharacterName(match.player1_character)} vs{" "}
+                      {getCharacterName(match.player2_character)}
+                    </p>
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
         )}
