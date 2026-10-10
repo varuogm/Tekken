@@ -62,6 +62,26 @@ export function formatDayLabel(dateKey: string): string {
   return `${weekday} · ${rest}`;
 }
 
+export function formatDayHeading(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function formatBattleOrdinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  const mod10 = n % 10;
+  if (mod10 === 1) return `${n}st`;
+  if (mod10 === 2) return `${n}nd`;
+  if (mod10 === 3) return `${n}rd`;
+  return `${n}th`;
+}
+
 export function formatBattleDate(match: MatchWithPlayers): string {
   const key = parsePlayedAt(match);
   const [y, m, d] = key.split("-").map(Number);
