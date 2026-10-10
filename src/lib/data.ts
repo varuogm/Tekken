@@ -20,7 +20,7 @@ export async function fetchMatches(): Promise<MatchWithPlayers[]> {
   const { data, error } = await supabase
     .from("matches")
     .select(
-      "id, player1_id, player2_id, player1_character, player2_character, winner_id, loser_id, comment, created_at",
+      "id, player1_id, player2_id, player1_character, player2_character, winner_id, loser_id, comment, played_at, created_at",
     )
     .order("created_at", { ascending: false });
 

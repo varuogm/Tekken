@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { useLeagueStats } from "@/hooks/useLeagueStats";
 import { getCharacterName } from "@/lib/constants";
+import { formatBattleDate } from "@/lib/dates";
 import type { MatchWithPlayers } from "@/lib/types";
 
 function FormDots({ form }: { form: ("W" | "L")[] }) {
@@ -341,7 +342,10 @@ export default function StatsPage() {
                   {getCharacterName(match.player1_character)} vs{" "}
                   {getCharacterName(match.player2_character)}
                 </p>
-                <p className="mt-1 text-xs text-white/40">
+                <p className="mt-1 text-xs text-white/50">
+                  {formatBattleDate(match)}
+                </p>
+                <p className="mt-0.5 text-xs text-white/35">
                   Battle #{data.totalMatches - idx}
                 </p>
               </button>

@@ -2,6 +2,7 @@
 
 import { CharacterImage } from "@/components/CharacterImage";
 import { getCharacterName } from "@/lib/constants";
+import { formatBattleDate } from "@/lib/dates";
 import type { MatchWithPlayers } from "@/lib/types";
 
 type Props = {
@@ -11,7 +12,7 @@ type Props = {
 };
 
 export function MatchScorecard({ match, indexLabel, onClose }: Props) {
-  const date = new Date(match.created_at);
+  const recorded = new Date(match.created_at);
 
   return (
     <div className="fixed inset-0 z-[75] flex items-center justify-center bg-[var(--bg)]/95 p-4">
@@ -61,16 +62,20 @@ export function MatchScorecard({ match, indexLabel, onClose }: Props) {
         ) : null}
 
         <p className="mt-6 text-center text-sm text-[var(--muted)]">
-          {date.toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
+          <span className="text-white/80">{formatBattleDate(match)}</span>
           <br />
-          {date.toLocaleTimeString(undefined, {
-            hour: "numeric",
-            minute: "2-digit",
-          })}
+          <span className="text-xs">
+            Logged{" "}
+            {recorded.toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            })}{" "}
+            at{" "}
+            {recorded.toLocaleTimeString(undefined, {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </span>
         </p>
 
         <button

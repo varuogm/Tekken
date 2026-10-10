@@ -1,24 +1,96 @@
 import { CHARACTERS, getCharacterName, TROPHY_CONFIG } from "@/lib/constants";
+import {
+  compareMatchesChronological,
+  compareMatchesReverseChronological,
+  formatDayLabel,
+  isDateInCurrentWeek,
+  parsePlayedAt,
+  todayLocalDate,
+} from "@/lib/dates";
 import type {
+  DayLeaderboardGroup,
   FunStats,
   HeadToHead,
   LeaderboardEntry,
   LeagueStats,
   MatchWithPlayers,
+  PeriodLeaderboardEntry,
   Player,
   PlayerStats,
 } from "@/lib/types";
 
 function chronological(matches: MatchWithPlayers[]): MatchWithPlayers[] {
-  return [...matches].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-  );
+  return [...matches].sort(compareMatchesChronological);
 }
 
 function reverseChronological(matches: MatchWithPlayers[]): MatchWithPlayers[] {
-  return [...matches].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  return [...matches].sort(compareMatchesReverseChronological);
+}
+
+export function buildPeriodLeaderboard(
+  players: Player[],
+  matches: MatchWithPlayers[],
+): PeriodLeaderboardEntry[] {
+  const stats = new Map<string, { wins: number; losses: number }>();
+
+  for (const player of players) {
+    stats.set(player.id, { wins: 0, losses: 0 });
+  }
+
+  for (const match of matches) {
+    const winner = stats.get(match.winner_id);
+    const loser = stats.get(match.loser_id);
+    if (winner) winner.wins += 1;
+    if (loser) loser.losses += 1;
+  }
+
+  return players
+    .map((player) => {
+      const { wins, losses } = stats.get(player.id) ?? { wins: 0, losses: 0 };
+      const total = wins + losses;
+      return {
+        playerId: player.id,
+        name: player.name,
+        wins,
+        losses,
+        matches: total,
+        winRate: total ? (wins / total) * 100 : 0,
+        rank: 0,
+      };
+    })
+    .filter((e) => e.matches > 0)
+    .sort((a, b) => {
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return a.name.localeCompare(b.name);
+    })
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+function computeWeekByDay(
+  players: Player[],
+  matches: MatchWithPlayers[],
+): DayLeaderboardGroup[] {
+  const weekMatches = matches.filter((m) =>
+    isDateInCurrentWeek(parsePlayedAt(m)),
   );
+  const byDay = new Map<string, MatchWithPlayers[]>();
+
+  for (const match of weekMatches) {
+    const key = parsePlayedAt(match);
+    const list = byDay.get(key) ?? [];
+    list.push(match);
+    byDay.set(key, list);
+  }
+
+  return [...byDay.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([dateKey, dayMatches]) => ({
+      dateKey,
+      label: formatDayLabel(dateKey),
+      matchCount: dayMatches.length,
+      leaderboard: buildPeriodLeaderboard(players, dayMatches),
+    }));
 }
 
 function pairKey(a: string, b: string): string {
@@ -325,10 +397,21 @@ export function computeLeagueStats(
     .filter((c) => c.matches > 0)
     .sort((a, b) => b.matches - a.matches);
 
+  const todayKey = todayLocalDate();
+  const todayMatches = matches.filter((m) => parsePlayedAt(m) === todayKey);
+  const weekMatches = matches.filter((m) =>
+    isDateInCurrentWeek(parsePlayedAt(m)),
+  );
+
   return {
     totalMatches: matches.length,
     totalPlayers: players.length,
     leaderboard,
+    todayMatchCount: todayMatches.length,
+    todayLeaderboard: buildPeriodLeaderboard(players, todayMatches),
+    weekMatchCount: weekMatches.length,
+    weekLeaderboard: buildPeriodLeaderboard(players, weekMatches),
+    weekByDay: computeWeekByDay(players, matches),
     headToHead,
     characterUsage,
     fun: computeFunStats(leaderboard, headToHead, matches, players),
